@@ -1,0 +1,19 @@
+clear; close all; clc;
+load('DDPG_Robot.mat', 'agent','env');   % 加载已有agent（含缓冲区）
+agent.AgentOptions.ResetExperienceBufferBeforeTraining = false;
+
+% 训练选项（MaxEpisodes 可以改小，也可以很大）
+trainingOpts = rlTrainingOptions(...
+    'UseParallel',true,...
+    'MaxEpisodes', 100, ...               
+    'MaxStepsPerEpisode', 2000, ...
+    'Verbose', 1, ...
+    'SaveAgentCriteria', 'EpisodeCount', ...
+    'Plots', 'training-progress');
+% 
+if isempty(gcp('nocreate')),parpool('local',4); end
+% 增量训练
+
+trainingStats = train(agent, env, trainingOpts);
+
+save('DDPG_Robot.mat', 'agent', 'env', '-v7.3');
