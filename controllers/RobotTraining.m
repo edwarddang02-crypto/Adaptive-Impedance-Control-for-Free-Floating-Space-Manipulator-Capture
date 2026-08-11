@@ -1,19 +1,34 @@
-clear; close all; clc;
-load('DDPG_Robot.mat', 'agent','env');   % 加载已有agent（含缓冲区）
+clearvars; close all; clc;
+
+% Continue training an agent produced by agent_define_simplified.m.
+checkpointFile = 'DDPG_Robot.mat';
+if ~isfile(checkpointFile)
+    error('Checkpoint not found: %s. Run agent_define_simplified.m first.', checkpointFile);
+end
+
+rng(42, 'twister');
+load(checkpointFile, 'agent', 'env');
 agent.AgentOptions.ResetExperienceBufferBeforeTraining = false;
 
-% 训练选项（MaxEpisodes 可以改小，也可以很大）
-trainingOpts = rlTrainingOptions(...
-    'UseParallel',true,...
-    'MaxEpisodes', 100, ...               
-    'MaxStepsPerEpisode', 2000, ...
-    'Verbose', 1, ...
-    'SaveAgentCriteria', 'EpisodeCount', ...
+modelName = 'DDPGImpedance';
+load_system(modelName);
+episodeDuration = str2double(get_param(modelName, 'StopTime'));
+maxStepsPerEpisode = ceil(episodeDuration / agent.AgentOptions.SampleTime);
+maxEpisodes = 100;
+useParallel = strcmpi(getenv('MATLAB_RL_USE_PARALLEL'), 'true');
+
+if useParallel && isempty(gcp('nocreate'))
+    parpool('local');
+end
+
+trainingOpts = rlTrainingOptions( ...
+    'UseParallel', useParallel, ...
+    'MaxEpisodes', maxEpisodes, ...
+    'MaxStepsPerEpisode', maxStepsPerEpisode, ...
+    'StopTrainingCriteria', 'EpisodeCount', ...
+    'StopTrainingValue', maxEpisodes, ...
+    'Verbose', true, ...
     'Plots', 'training-progress');
-% 
-if isempty(gcp('nocreate')),parpool('local',4); end
-% 增量训练
 
 trainingStats = train(agent, env, trainingOpts);
-
-save('DDPG_Robot.mat', 'agent', 'env', '-v7.3');
+save(checkpointFile, 'agent', 'env', 'trainingStats', 'trainingOpts', '-v7.3');
