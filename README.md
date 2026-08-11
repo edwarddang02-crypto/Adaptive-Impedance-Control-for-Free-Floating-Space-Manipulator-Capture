@@ -2,7 +2,7 @@
 
 MATLAB/Simulink models and supporting MATLAB functions for studying compliant contact control of a planar, two-link free-floating space manipulator. The project compares fixed impedance control, an adaptive damping law, and a DDPG-based damping adjustment strategy for capture tasks with uncertain contact conditions.
 
-> **Project status:** Research prototype. The committed Simulink models and MATLAB source are provided as-is; training artefacts and a runnable training harness are not included.
+> **Project status:** Research prototype. The committed Simulink models and MATLAB source are provided as-is. Training requires the listed MathWorks toolboxes and may take substantial compute time.
 
 ## Highlights
 
@@ -71,9 +71,9 @@ The DDPG setup uses a five-element observation vector and one continuous action.
 
 ### DDPG training note
 
-`controllers/agent_define_simplified.m` creates an environment named `Robot_DL_impedance` and writes `DDPG_Robot_Trained.mat`. That model file is **not included in this repository**; its exact block path must contain `Robot_DL_impedance/RL Agent`. Similarly, `controllers/RobotTraining.m` expects an existing `DDPG_Robot.mat` file.
+`controllers/agent_define_simplified.m` uses the included `DDPGImpedance.slx` model and its `DDPGImpedance/RL Agent` block. Run this script for an initial training session; it saves `DDPG_Robot.mat`. `controllers/RobotTraining.m` then loads that same file for incremental training.
 
-To reproduce or extend DDPG training, provide the missing Simulink training model, set the environment model/block path to match it, then run the agent-definition script. Generated `.mat` training files are intentionally ignored by Git because they can be large.
+Generated `.mat` training files are intentionally ignored by Git because they can be large. Review the episode count, stopping criterion, exploration noise, and local parallel-pool settings before starting a long training run.
 
 ## Model parameters
 
@@ -87,12 +87,12 @@ The repository includes the tracking plots below and a [Chinese capture-control 
 | --- | --- |
 | ![Planar force tracking](experiment/PlanarForceTracking.jpg) | ![Planar position tracking](experiment/PlanarPositionTracking.jpg) |
 
-The original project report compares fixed impedance control, adaptive impedance control, and DDPG-based impedance control. Treat the plots as experiment outputs, not as independently reproducible benchmarks until the missing DDPG training model and configuration are supplied.
+The original project report compares fixed impedance control, adaptive impedance control, and DDPG-based impedance control. Treat the plots as experiment outputs rather than independently reproduced benchmarks; reproduce them with documented initial conditions, solver settings, and random seeds.
 
 ## Limitations and next steps
 
 - The current implementation is planar and simulation-only.
-- Training depends on an untracked Simulink model and saved agent data.
+- Training can be computationally expensive and generates large saved-agent data files.
 - Before publishing quantitative comparisons, document initial conditions, the contact surface, solver settings, random seeds, and episode configuration.
 
 Potential extensions include 3D dynamics, hardware-in-the-loop validation, and comparison with SAC or TD3.

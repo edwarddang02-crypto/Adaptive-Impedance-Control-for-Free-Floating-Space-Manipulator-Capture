@@ -7,7 +7,7 @@ obsInfo.Name = 'observations';
 actInfo = rlNumericSpec([1 1], "UpperLimit", 100, "LowerLimit", -100);
 actInfo.Name = 'action';
 
-env = rlSimulinkEnv("Robot_DL_impedance","Robot_DL_impedance/RL Agent",obsInfo,actInfo,'UseFastRestart', 'on');
+env = rlSimulinkEnv("DDPGImpedance","DDPGImpedance/RL Agent",obsInfo,actInfo,'UseFastRestart', 'on');
 
 %% 2. Actor 网络构造 (极简 MLP 架构: 64 -> 64)
 actorNet = [
@@ -81,5 +81,5 @@ testOpts = rlTrainingOptions(...
 testOpts.StopTrainingValue = 1e6;
 trainStats = train(agent, env, testOpts);
 
-save('DDPG_Robot_Trained.mat', 'agent', 'trainStats', 'env', '-v7.3');
+save('DDPG_Robot.mat', 'agent', 'trainStats', 'env', '-v7.3');
 disp('训练完成，模型已保存。');
