@@ -1,1 +1,10 @@
+# MATLAB generated data and backup files
 *.mat
+*.asv
+*.m~
+*.autosave
+
+# Simulink generated files
+slprj/
+codegen/
+*.slxc

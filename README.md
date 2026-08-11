@@ -1,195 +1,102 @@
 # Adaptive Impedance Control for Free-Floating Space Manipulator Capture
 
-## DDPG-Based Intelligent Variable Damping Control for On-Orbit Compliant Capture
-
-## Overview
-
-This project investigates active compliant capture control for free-floating space manipulators under uncertain contact environments.
-
-Space robotic capture tasks involve significant challenges including:
-
-- nonlinear and coupled dynamics caused by base-manipulator interaction;
-- unknown target properties and environmental stiffness;
-- high impact force during contact operations.
-
-To address these problems, this work develops an adaptive impedance control framework combining conventional control theory and deep reinforcement learning.
-
-A planar two-link Free-Floating Space Robot (FFSR) is modeled and simulated in MATLAB/Simulink.
-
-The proposed framework integrates:
-
-- Cartesian impedance control;
-- adaptive variable damping regulation;
-- Deep Deterministic Policy Gradient (DDPG)-based intelligent impedance optimization.
-
-
----
-
-# System Architecture
-
-
-The overall control architecture consists of:
-
-Desired trajectory → Impedance Controller → Adaptive Damping Adjustment
-→ PID Position Controller
-→ Free-Floating Space Manipulator
-→ Contact Force Feedback
-
-The controller adopts a dual-loop structure:
-
-- Inner loop:
-  PID-based joint position tracking
-
-- Outer loop:
-  Cartesian impedance regulation based on contact force error
-
-
----
-
-# Main Contributions
-
-## 1. Free-Floating Space Manipulator Modeling
-
-A planar two-link free-floating space manipulator is established considering:
-
-- base-manipulator coupling effect;
-- nonlinear dynamics;
-- underactuated characteristics.
-
-The kinematic model is derived using the modified D-H method.
-
-The dynamic model is constructed based on recursive Newton-Euler formulation.
-
-
----
-
-## 2. Adaptive Variable Damping Impedance Control
-
-A time-varying damping adaptation strategy is proposed.
-
-Instead of using fixed impedance parameters, the damping coefficient is updated online according to:
-
-- force tracking error;
-- end-effector velocity compensation.
-
-The controller improves the balance between:
-
-- trajectory tracking accuracy;
-- contact compliance;
-- impact force suppression.
-
-
----
-
-## 3. DDPG-Based Intelligent Impedance Optimization
-
-A Deep Deterministic Policy Gradient (DDPG) controller is introduced to optimize impedance parameters.
-
-The reinforcement learning agent:
-
-### State:
-
-
-[
-force error,
-force error derivative,
-robot motion information,
-previous action
-]
-
-
-### Action:
-
-
-ΔB
-
-
-where ΔB represents the damping modification.
-
-The Actor-Critic network learns the optimal damping adjustment strategy through environment interaction.
-
-
----
-
-# Reward Function Design
-
-A composite reward function is designed containing:
-
-## Force Tracking Reward
-
-Encourages convergence toward desired contact force.
-
-
-## Smoothness Constraint
-
-Penalizes excessive damping variation to avoid control oscillation.
-
-
-## Safety Boundary Protection
-
-Introduces exponential penalties to prevent unstable exploration.
-
-
----
-
-# Simulation Results
-
-Three controllers are compared:
-
-| Controller | Description |
-|-|-|
-| Fixed Impedance Control | Constant impedance parameters |
-| Adaptive Impedance Control | Time-varying damping adaptation |
-| DDPG Impedance Control | Reinforcement learning based optimization |
-
-
-## Complex Unknown Surface Contact
-
-Simulation environment:
-
-- unknown sinusoidal surface;
-- variable contact condition;
-- desired contact force: 20 N.
-
-
-## Force Tracking Performance
-
-| Method | Stable Force Error |
-|-|-|
-| Fixed Impedance | 1.04 N |
-| Adaptive Impedance | 0.45 N |
-| DDPG Impedance | 0.38 N |
-
-
-The proposed DDPG-based controller achieves the best force tracking accuracy and convergence performance.
-
-
----
-
-# Environment
-
-## Software
-
-- MATLAB
+MATLAB/Simulink models and supporting MATLAB functions for studying compliant contact control of a planar, two-link free-floating space manipulator. The project compares fixed impedance control, an adaptive damping law, and a DDPG-based damping adjustment strategy for capture tasks with uncertain contact conditions.
+
+> **Project status:** Research prototype. The committed Simulink models and MATLAB source are provided as-is; training artefacts and a runnable training harness are not included.
+
+## Highlights
+
+- Planar five-state free-floating space-manipulator dynamics.
+- Cartesian impedance-control experiments with fixed and adaptive damping.
+- DDPG agent definition for learning a bounded damping adjustment.
+- Force- and position-tracking result figures and a Chinese report.
+
+## Repository layout
+
+```text
+.
+├── controllers/
+│   ├── FixedImpedance.slx             # Fixed-parameter impedance model
+│   ├── AdaptationLawImpedance.slx     # Adaptive damping impedance model
+│   ├── DDPGImpedance.slx              # DDPG impedance model
+│   ├── agent_define_simplified.m      # DDPG actor, critic, and training setup
+│   └── RobotTraining.m                # Incremental training script
+├── models/
+│   ├── RobotParameters.m              # Robot and contact parameters
+│   ├── dynamics_model.m               # Inertia and nonlinear dynamics terms
+│   └── jacobian_matrix.m              # End-effector Jacobian
+├── experiment/
+│   ├── PlanarForceTracking.jpg
+│   └── PlanarPositionTracking.jpg
+└── results/
+    └── CaptureControlReport(Chinese).pdf
+```
+
+## Control concept
+
+The outer loop regulates end-effector contact behavior in Cartesian space. A PID position loop tracks the corresponding joint motion, while force feedback affects the impedance response. The adaptive and learning-based variants update the damping term online to balance compliant contact, force-tracking error, and response smoothness.
+
+```text
+Desired trajectory → impedance controller → damping adjustment → PID position control
+                                                              ↓
+Contact-force feedback ← free-floating space manipulator ← joint commands
+```
+
+The DDPG setup uses a five-element observation vector and one continuous action. The action is scaled to the interval `[-100, 100]` and represents a damping modification.
+
+## Requirements
+
+- MATLAB R2024b (the version used for this project)
 - Simulink
-- Reinforcement Learning Toolbox
+- Reinforcement Learning Toolbox (for `agent_define_simplified.m` and DDPG experiments)
+- Parallel Computing Toolbox (optional; the training scripts request a local parallel pool)
 
+## Getting started
 
-## Tested Version
+1. Clone the repository and open MATLAB in the repository root.
+2. Add the source folders to the MATLAB path:
 
-MATLAB R2024b
+   ```matlab
+   addpath('models', 'controllers');
+   savepath;
+   ```
 
+3. Open one of the models in `controllers/` and inspect its block parameters before simulation:
 
----
+   ```matlab
+   open_system('controllers/FixedImpedance.slx')
+   ```
 
-# Future Work
+4. Run the desired simulation from Simulink. Compare fixed, adaptive, and DDPG variants under the same initial conditions and contact configuration.
 
-Future improvements include:
+### DDPG training note
 
-- Extension to 3D space manipulators;
-- Hardware-in-the-loop validation;
-- Comparison with SAC and TD3 algorithms;
-- Deployment on ROS/Gazebo simulation platform.
+`controllers/agent_define_simplified.m` creates an environment named `Robot_DL_impedance` and writes `DDPG_Robot_Trained.mat`. That model file is **not included in this repository**; its exact block path must contain `Robot_DL_impedance/RL Agent`. Similarly, `controllers/RobotTraining.m` expects an existing `DDPG_Robot.mat` file.
 
+To reproduce or extend DDPG training, provide the missing Simulink training model, set the environment model/block path to match it, then run the agent-definition script. Generated `.mat` training files are intentionally ignored by Git because they can be large.
 
----
+## Model parameters
+
+`models/RobotParameters.m` centralizes the main values used by the MATLAB functions, including base and link masses, link geometry, inertias, contact stiffness/damping, end-effector and target radii, desired inertia, and torque limit. Adjust these values before running a simulation that uses a different robot or contact environment.
+
+## Included results
+
+The repository includes the tracking plots below and a [Chinese capture-control report](results/CaptureControlReport(Chinese).pdf).
+
+| Force tracking | Position tracking |
+| --- | --- |
+| ![Planar force tracking](experiment/PlanarForceTracking.jpg) | ![Planar position tracking](experiment/PlanarPositionTracking.jpg) |
+
+The original project report compares fixed impedance control, adaptive impedance control, and DDPG-based impedance control. Treat the plots as experiment outputs, not as independently reproducible benchmarks until the missing DDPG training model and configuration are supplied.
+
+## Limitations and next steps
+
+- The current implementation is planar and simulation-only.
+- Training depends on an untracked Simulink model and saved agent data.
+- Before publishing quantitative comparisons, document initial conditions, the contact surface, solver settings, random seeds, and episode configuration.
+
+Potential extensions include 3D dynamics, hardware-in-the-loop validation, and comparison with SAC or TD3.
+
+## License
+
+No license has been specified. Contact the repository owner before reusing the code outside personal or academic evaluation.
